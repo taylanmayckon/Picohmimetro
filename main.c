@@ -4,6 +4,7 @@
 #include "hardware/i2c.h"
 #include "libs/ssd1306.h"
 #include "libs/font.h"
+#include "libs/structs.h"
 
 #define I2C_PORT i2c1
 #define I2C_SDA 14
@@ -21,6 +22,50 @@ char str_x[5]; // Buffer para armazenar a string
 char str_y[5]; // Buffer para armazenar a string
 bool cor = true; // Boolenano para indicar se o display vai imprimir branco ou não
 uint32_t last_time = 0; // Variável para o debounce (armazena tempo)
+
+// Estrutura que armazena as bases de resistência e cores de cada uma
+Resistor resistores_e24[] = {
+    {10, "Marrom", "Preto"},
+    {11, "Marrom", "Marrom"},
+    {12, "Marrom", "Vermelho"},
+    {13, "Marrom", "Laranja"},
+    {15, "Marrom", "Verde"},
+    {16, "Marrom", "Azul"},
+    {18, "Marrom", "Cinza"},
+    {20, "Vermelho", "Preto"},
+    {22, "Vermelho", "Vermelho"},
+    {24, "Vermelho", "Amarelo"},
+    {27, "Vermelho", "Violeta"},
+    {30, "Laranja", "Preto"},
+    {33, "Laranja", "Laranja"},
+    {36, "Laranja", "Azul"},
+    {39, "Laranja", "Branco"},
+    {43, "Amarelo", "Laranja"},
+    {47, "Amarelo", "Violeta"},
+    {51, "Verde", "Marrom"},
+    {56, "Verde", "Azul"},
+    {62, "Azul", "Vermelho"},
+    {68, "Azul", "Cinza"},
+    {75, "Violeta", "Verde"},
+    {82, "Cinza", "Vermelho"},
+    {91, "Branco", "Marrom"},
+};
+
+// Estrutura que armazena as potências e cores de cada uma
+Multiplicador multiplicadores[] = {
+    {1, "Preto"},
+    {10, "Marrom"},
+    {100, "Vermelho"},
+    {1000, "Laranja"},
+    {10000, "Amarelo"},
+    {100000, "Verde"},
+    {1000000, "Azul"},
+    {10000000, "Violeta"},
+    {100000000, "Cinza"},
+    {1000000000, "Branco"},
+    {0.1, "Dourado"},
+    {0.01, "Prata"},
+};
 
 // Interrupção de GPIO
 void gpio_irq_handler(uint gpio, uint32_t events){
