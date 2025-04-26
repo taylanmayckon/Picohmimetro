@@ -5,6 +5,10 @@
 #include "libs/ssd1306.h"
 #include "libs/font.h"
 #include "libs/structs.h"
+#include "libs/led_matrix.h"
+#include "hardware/pio.h"
+#include "hardware/clocks.h"
+#include "hardware/timer.h"
 
 #define I2C_PORT i2c1
 #define I2C_SDA 14
@@ -12,6 +16,13 @@
 #define endereco 0x3C
 #define ADC_PIN 28 // GPIO para o voltímetro
 #define BUTTON_A 5  // GPIO para botão A
+
+// Variáveis da PIO declaradas no escopo global
+PIO pio;
+uint sm;
+// Constantes para a matriz de leds
+#define IS_RGBW false
+#define LED_MATRIX_PIN 7
 
 int R_conhecido = 10000;   // Resistor de 10k ohm
 float R_x = 0.0;           // Resistor desconhecido
@@ -108,6 +119,12 @@ int main(){
     // Inicializando o ADC
     adc_init();
     adc_gpio_init(ADC_PIN); // GPIO 28 como entrada analógica
+
+    // Inicializando a PIO
+    pio = pio0;
+    sm = 0;
+    uint offset = pio_add_program(pio, &ws2812_program);
+    ws2812_program_init(pio, sm, offset, LED_MATRIX_PIN, 800000, IS_RGBW);
 
     while (true) {
         adc_select_input(2); // Seleciona o ADC para eixo X. O pino 28 como entrada analógica
