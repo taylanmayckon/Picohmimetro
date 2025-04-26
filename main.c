@@ -107,7 +107,7 @@ void gpio_irq_handler(uint gpio, uint32_t events){
         last_time = current_time; 
 
         if(gpio == BUTTON_A){
-            printf("Eu sou uma interrupção, e estou funcionando! :)\n");
+            printf("Eu sou uma interrupção e estou funcionando! :)");
         }
     }
     
@@ -242,8 +242,9 @@ int main(){
         ssd1306_line(&ssd, 44, 37, 44, 60, cor);           // Desenha uma linha vertical
         ssd1306_draw_string(&ssd, str_x, 8, 52, false);           // Desenha uma string
         ssd1306_draw_string(&ssd, str_y, 59, 52, false);          // Desenha uma string
+        
+        
         ssd1306_send_data(&ssd);                           // Atualiza o display
-        printf("%.2f\n", R_x);
         sleep_ms(700);
     }
 }
