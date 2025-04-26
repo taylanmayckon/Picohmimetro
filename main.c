@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "string.h"
+#include "math.h"
 #include "hardware/adc.h"
 #include "hardware/i2c.h"
 #include "libs/ssd1306.h"
@@ -78,6 +80,26 @@ Multiplicador multiplicadores[] = {
     {0.01, "Prata"},
 };
 
+// RGB de cada cor
+Cores cod_cores[] = {
+    {"Preto", 0, 0, 0},
+    {"Marrom", 112, 56, 0},
+    {"Vermelho", 255, 0, 0},
+    {"Laranja", 255, 165, 0},
+    {"Amarelo", 255, 255, 0},
+    {"Verde", 0, 128, 0},
+    {"Azul", 0, 0, 255},
+    {"Violeta", 128, 0, 128},
+    {"Cinza", 128, 128, 128},
+    {"Branco", 255, 255, 255},
+    {"Dourado", 212, 175, 55},
+    {"Prateado", 192, 192, 192}
+};
+
+// Matriz para armazenar a cor de cada LED a ser impresso
+Cores matriz_cores[25];
+
+
 // Interrupção de GPIO
 void gpio_irq_handler(uint gpio, uint32_t events){
     uint32_t current_time = to_us_since_boot(get_absolute_time()); // Obtendo tempo atual (em us)
@@ -89,6 +111,14 @@ void gpio_irq_handler(uint gpio, uint32_t events){
         }
     }
     
+}
+
+int search_color(char *cor_procurada){
+    int j=0; // Variavel para iterar o cod de cores
+    while(strcmp(cor_procurada, cod_cores[j].nome) != 0){ // Sempre que for diferente de 0, as cores são diferentes, vai testando até achar a cor correta
+        j++;
+    }
+    return j; // Retorna o index da cor no "cod_cores"
 }
 
 int main(){
@@ -140,6 +170,62 @@ int main(){
         // Fórmula simplificada: R_x = R_conhecido * ADC_encontrado /(ADC_RESOLUTION - adc_encontrado)
         R_x = (R_conhecido * media) / (ADC_RESOLUTION - media);
 
+        // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+        // PARTE DA MATRIZ DE LEDS
+        for(int i=0; i<25; i++){ // Faz a limpeza da matriz completa, apagando todas as cores
+            matriz_cores[i] = cod_cores[0];
+        }
+
+        int j; // Variavel para armazenar o index dos vetores de cor correspondentes
+
+        float base = R_x; // Vai ser operada para encontrar o valor da resistencia base no E24
+        float potencia = 1; // Armazena o valor bruto da potência de 10
+
+        // Essa parte é generalista, abranje todos os resistores E24 para normalizar
+        while(base >= 91.0f){ // Valor maximo normalizado
+            base /= 10; 
+            potencia *= 10;
+        }
+        while(base <= 10.0f){ // Valor minimo normalizado
+            base *= 10;
+            potencia /= 10;
+        }
+
+        // Procurando o resistor mais próximo
+        j = 0; // Valor inicial para o index
+        int num_resistores = 24;
+
+        for(int i=0; i<num_resistores; i++){
+            double erro_percent = (double)fabs((base-resistores_e24[i].resistencia_base)/resistores_e24[i].resistencia_base); // Obtendo o percentual de erro
+            if(erro_percent<=0.05f){ // Condição para encerrar o loop quando achar o resistor dentro do erro de 5%
+                j=i; // Armazena o index do resistor
+                break;
+            }
+        }
+
+        // Alocando as novas cores na matriz
+        int index = search_color(resistores_e24[j].faixa1); 
+        matriz_cores[10] = cod_cores[index]; // Faixa 1 (Valor 1)
+
+        index = search_color(resistores_e24[j].faixa2); 
+        matriz_cores[11] = cod_cores[index]; // Faixa 2 (Valor 2)
+
+        for(int i=0; i<12; i++){ // Pegando o index da cor de faixa de multiplicador
+            if(potencia == multiplicadores[i].multiplicador){
+                j=i;
+                break;
+            }
+        }
+
+        index = search_color(multiplicadores[j].faixa3); 
+        matriz_cores[12] = cod_cores[index]; // Faixa 3 (Multiplicador)
+
+        matriz_cores[13] = cod_cores[10]; // Faixa 4 (Tolerância)
+
+        set_leds(matriz_cores);
+
+        // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+        // PARTE DO DISPLAY I2C
         sprintf(str_x, "%1.0f", media); // Converte o inteiro em string
         sprintf(str_y, "%1.0f", R_x);   // Converte o float em string
 
@@ -157,6 +243,7 @@ int main(){
         ssd1306_draw_string(&ssd, str_x, 8, 52, false);           // Desenha uma string
         ssd1306_draw_string(&ssd, str_y, 59, 52, false);          // Desenha uma string
         ssd1306_send_data(&ssd);                           // Atualiza o display
+        printf("%.2f\n", R_x);
         sleep_ms(700);
     }
 }

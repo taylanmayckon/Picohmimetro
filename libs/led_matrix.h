@@ -4,6 +4,7 @@
 #include "hardware/clocks.h"
 #include "hardware/timer.h"
 #include "ws2812.pio.h"
+#include "structs.h"
 
 // Struct para o vetor com os ponteiros dos frames
 typedef struct {
@@ -16,8 +17,6 @@ static inline void put_pixel(uint32_t pixel_grb);
 
 uint32_t urgb_u32(double r, double g, double b);
 
-void set_leds(uint8_t r, uint8_t g, uint8_t b);
-
-void update_matrix(bool *input_matrix);
+void set_leds(Cores matriz_rgb[25]);
 
 #endif

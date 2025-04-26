@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(Picohmimetro main.c libs/ssd1306.c)
+add_executable(Picohmimetro main.c libs/ssd1306.c libs/led_matrix.c)
 
 pico_set_program_name(Picohmimetro "Picohmimetro")
 pico_set_program_version(Picohmimetro "0.1")

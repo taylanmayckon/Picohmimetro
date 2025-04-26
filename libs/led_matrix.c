@@ -5,11 +5,6 @@
 // Variável que define a intensidade do brilho dos LEDS
 static const uint8_t intensidade_max = 10;
 
-// Declaração das cores dos frames que serão usados na matriz de leds
-uint8_t led_r = intensidade_max;
-uint8_t led_g = 0;
-uint8_t led_b = 0;
-
 // Quantidade de pixels
 #define NUM_PIXELS 25
 
@@ -17,7 +12,7 @@ uint8_t led_b = 0;
 bool led_buffer[NUM_PIXELS] = {
     0, 0, 0, 0, 0, // Linha 0 (Certo)
     0, 0, 0, 0, 0, // Linha 1 (Espelhado)
-    0, 0, 0, 0, 0, // Linha 2 (Certo)
+    1, 1, 1, 1, 1, // Linha 2 (Certo)
     0, 0, 0, 0, 0, // Linha 3 (Espelhado)
     0, 0, 0, 0, 0, // Linha 4 (Certo)
 };
@@ -32,41 +27,20 @@ uint32_t urgb_u32(double r, double g, double b){
 }
 
 // Função que vai imprimir cada pixel na matriz
-void set_leds(uint8_t r, uint8_t g, uint8_t b){
-    // Define a cor com base nos parâmetros fornecidos
-    uint32_t color = urgb_u32(r, g, b);
+void set_leds(Cores matriz_rgb[25]){
+    float intensidade = 0.05; // Multiplicador de intensidade para os leds
+    uint32_t color; // Armazena os valores das cores
+
 
     // Define todos os LEDs com a cor especificada
     // Faz o processo de virar de cabeça para baixo o arranjo
     for (int i = NUM_PIXELS-1; i >= 0; i--){
         if (led_buffer[i]){
+            color = urgb_u32(intensidade*matriz_rgb[i].red, intensidade*matriz_rgb[i].green, intensidade*matriz_rgb[i].blue); // Converte as cores para o padrão aceito pela matriz
             put_pixel(color); // Liga o LED com um no buffer
         }
         else{
             put_pixel(0);  // Desliga os LEDs com zero no buffer
         }
     }
-}
-
-// Função que faz as operações necessárias para atualizar o display
-void update_matrix(bool *input_matrix){
-    // Ordenando corretamente o vetor recebido no buffer
-    int j = 0; // Variável para controle do index espelhado
-    for(int i=0; i<25; i++){
-        if(i>4 && i<10){
-            led_buffer[i] = input_matrix[9-j];
-            j++;
-        }
-        else if(i>14 && i<20){
-            led_buffer[i] = input_matrix[19-j];
-            j++;
-        }
-        else{
-            j=0;
-            led_buffer[i] = input_matrix[i];
-        }
-    }
-
-    // Chamando a função que vai imprimir as vagas
-    set_leds(led_r, led_g, led_b);
 }
