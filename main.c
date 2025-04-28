@@ -183,15 +183,21 @@ int main(){
         float potencia = 1; // Armazena o valor bruto da potência de 10
 
         // Essa parte é generalista, abranje todos os resistores E24 para normalizar
-        while(base >= 91.0f){ // Valor maximo normalizado
-            base /= 10; 
-            potencia *= 10;
+        if(base >= 91.0f){
+            while(base >= 91.0f){ // Valor maximo normalizado
+                base /= 10; 
+                potencia *= 10;
+            }
         }
-        while(base <= 10.0f){ // Valor minimo normalizado
-            base *= 10;
-            potencia /= 10;
+        else{
+            while(base <= 10.0f){ // Valor minimo normalizado
+                base *= 10;
+                potencia /= 10;
+            }
         }
+        
 
+        printf("Base: %.2f | Potencia: %.2f\n", base, potencia);
         // Procurando o resistor mais próximo
         j = 0; // Valor inicial para o index
         int num_resistores = 24;
@@ -215,13 +221,7 @@ int main(){
 
         for(int i=0; i<12; i++){ // Pegando o index da cor de faixa de multiplicador
             if(potencia == multiplicadores[i].multiplicador){
-                // Gambiarra para reconhecer o resistor de 10K
-                if(R_x>=9500){
-                    j=i+1;
-                }
-                else{
                     j=i;
-                }
                 break;
             }
         }
