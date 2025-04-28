@@ -35,6 +35,7 @@ char str_x[5]; // Buffer para armazenar a string
 char str_y[5]; // Buffer para armazenar a string
 bool cor = true; // Boolenano para indicar se o display vai imprimir branco ou não
 uint32_t last_time = 0; // Variável para o debounce (armazena tempo)
+char faixas[3][30];
 
 // Estrutura que armazena as bases de resistência e cores de cada uma
 Resistor resistores_e24[] = {
@@ -206,19 +207,28 @@ int main(){
         // Alocando as novas cores na matriz
         int index = search_color(resistores_e24[j].faixa1); 
         matriz_cores[10] = cod_cores[index]; // Faixa 1 (Valor 1)
+        strcpy(faixas[0], resistores_e24[j].faixa1); // Guardando o nome da cor (Faixa 1)
 
         index = search_color(resistores_e24[j].faixa2); 
         matriz_cores[11] = cod_cores[index]; // Faixa 2 (Valor 2)
+        strcpy(faixas[1], resistores_e24[j].faixa2); // Guardando o nome da cor (Faixa 2)
 
         for(int i=0; i<12; i++){ // Pegando o index da cor de faixa de multiplicador
             if(potencia == multiplicadores[i].multiplicador){
-                j=i;
+                // Gambiarra para reconhecer o resistor de 10K
+                if(R_x>=9500){
+                    j=i+1;
+                }
+                else{
+                    j=i;
+                }
                 break;
             }
         }
 
         index = search_color(multiplicadores[j].faixa3); 
         matriz_cores[12] = cod_cores[index]; // Faixa 3 (Multiplicador)
+        strcpy(faixas[2], multiplicadores[j].faixa3); // Guardnado o nome da cor (Faixa 3)
 
         matriz_cores[13] = cod_cores[10]; // Faixa 4 (Tolerância)
 
@@ -231,15 +241,22 @@ int main(){
 
         //  Atualiza o conteúdo do display com animações
         ssd1306_fill(&ssd, !cor);                          // Limpa o display
-        ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);      // Desenha um retângulo
-        ssd1306_line(&ssd, 3, 25, 123, 25, cor);           // Desenha uma linha
-        ssd1306_line(&ssd, 3, 37, 123, 37, cor);           // Desenha uma linha
-        ssd1306_draw_string(&ssd, "CEPEDI   TIC37", 8, 6, false); // Desenha uma string
-        ssd1306_draw_string(&ssd, "EMBARCATECH", 20, 16, false);  // Desenha uma string
-        ssd1306_draw_string(&ssd, "  Ohmimetro", 10, 28, false);  // Desenha uma string
+        ssd1306_rect(&ssd, 0, 0, 128, 64, cor, !cor);      // Desenha um retângulo
+        ssd1306_line(&ssd, 0, 25, 128, 25, cor);           // Desenha uma linha
+        ssd1306_line(&ssd, 0, 37, 128, 37, cor);           // Desenha uma linha
+        // 1º Faixa
+        ssd1306_draw_string(&ssd, "1: ", 8, 4, false); 
+        ssd1306_draw_string(&ssd, faixas[0], 24, 4, false);
+        ssd1306_line(&ssd, 0, 13, 128, 13, cor);
+        // 2º Faixa
+        ssd1306_draw_string(&ssd, "2: ", 8, 16, false);  
+        ssd1306_draw_string(&ssd, faixas[1], 24, 16, false);
+        // 3º Faixa
+        ssd1306_draw_string(&ssd, "3: ", 8, 28, false);           // Desenha uma string
+        ssd1306_draw_string(&ssd, faixas[2], 24, 28, false);
         ssd1306_draw_string(&ssd, "ADC", 13, 41, false);          // Desenha uma string
         ssd1306_draw_string(&ssd, "Resisten.", 50, 41, false);    // Desenha uma string
-        ssd1306_line(&ssd, 44, 37, 44, 60, cor);           // Desenha uma linha vertical
+        ssd1306_line(&ssd, 44, 37, 44, 60, cor);                  // Desenha uma linha vertical
         ssd1306_draw_string(&ssd, str_x, 8, 52, false);           // Desenha uma string
         ssd1306_draw_string(&ssd, str_y, 59, 52, false);          // Desenha uma string
         
